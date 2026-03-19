@@ -1,0 +1,94 @@
+package com.example.quizashu.presentation.Quiz
+
+import android.util.Log
+import androidx.compose.runtime.State
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.quizashu.common.Resource
+import com.example.quizashu.domain.model.Quiz
+import com.example.quizashu.domain.usecases.GetQuizzesUseCases
+import com.example.quizashu.presentation.home.componentts.EventHomeScreen
+import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.launch
+import javax.inject.Inject
+
+@HiltViewModel
+class QuizViewModel @Inject constructor(private val getQuizzesUseCases: GetQuizzesUseCases) :
+    ViewModel() {
+
+    val _quizList = MutableStateFlow(StateQuizScreen())
+    val quizList = _quizList
+
+
+    fun onEvent(event: EventQuizScreen) {
+        when (event) {
+            is EventQuizScreen.GetQuizzes -> {
+                getQuizzes(event.numberOfQuizzes, event.category, event.difficulty, event.type)
+            }
+
+            is EventQuizScreen.SetOptionSelected -> {
+                updateQuizStateList(event.quizStateIndex , event.selectedOption)
+            }
+
+            else -> {}
+        }
+    }
+
+    private fun updateQuizStateList(quizStateIndex: Int, selectedOption: Int) {
+
+        val updateQuizStateList = mutableListOf<QuizState>()
+
+        quizList.value.quizState.forEachIndexed { index, quizState ->
+            updateQuizStateList.add(
+                if (quizStateIndex == index) {
+                    quizState.copy(selectedOptions = selectedOption)
+                }else{
+                    quizState
+                }
+            )
+        }
+        _quizList.value = quizList.value.copy(quizState = updateQuizStateList)
+    }
+
+    private fun getQuizzes(amount: Int, category: Int, difficulty: String, type: String) {
+        viewModelScope.launch {
+            getQuizzesUseCases(amount, category, difficulty, type).collect { resource ->
+                when (resource) {
+                    is Resource.Loading -> {
+                        Log.d("quiz", "loading")
+                        _quizList.value = StateQuizScreen(isLoading = true)
+                    }
+
+                    is Resource.Success -> {
+                        val listOfQuizState: List<QuizState> = qetListOfQuizState(resource.data)
+                        _quizList.value = StateQuizScreen(quizState = listOfQuizState)
+                    }
+
+                    is Resource.Error -> {
+                        _quizList.value = StateQuizScreen(error = resource.message.toString())
+                    }
+
+                    else -> {}
+                }
+            }
+        }
+
+    }
+
+    private fun qetListOfQuizState(data: List<Quiz>?): List<QuizState> {
+        val listOfQuizState = mutableListOf<QuizState>()
+
+        for (quiz in data!!) {
+            val shuffeldOptions = mutableListOf<String>().apply {
+                add(quiz.correct_answer)
+                addAll(quiz.incorrect_answers)
+                shuffle()
+            }
+            listOfQuizState.add(QuizState(quiz, shuffeldOptions, -1))
+        }
+        return listOfQuizState
+    }
+}
