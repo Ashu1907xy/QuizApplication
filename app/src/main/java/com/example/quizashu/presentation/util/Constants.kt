@@ -39,7 +39,7 @@ object Constants {
         "Entertainment : Musics" to 12,
         "Entertainment : Musicals & Theatres" to 13,
         "Entertainment : Television" to 14,
-        "Entertainment : Video Games" to 15,
+        "Enter tainment : Video Games" to 15,
         "Entertainment : Board Games" to 16,
 
         "Science : Nature" to 17,
