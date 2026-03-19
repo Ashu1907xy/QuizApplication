@@ -62,6 +62,7 @@ fun QuizInterface(
                     "D" to quizState.shuffledOptions[3].replace("&quot;" , "\"").replace("&#039;" , "\""),
                 )
 
+
                 Column {
                     options.forEachIndexed { indix, (optionNumber, optionText) ->
                         if (optionText.isNotEmpty()) {

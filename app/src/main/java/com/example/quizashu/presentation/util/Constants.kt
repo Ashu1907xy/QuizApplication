@@ -63,5 +63,5 @@ object Constants {
     )
 
     val difficulty = listOf("Easy" , "Medium" , "Hard")
-    val type = listOf("Multiple Choice" , "TrueORFalse")
+    val type = listOf("Multiple Choice") //  , "TrueORFalse"   <- baad me kaam karage ispar
 }

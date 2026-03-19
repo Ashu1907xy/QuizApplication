@@ -1,8 +1,8 @@
 package com.example.quizashu.presentation.Quiz
 
 import android.util.Log
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
-import androidx.compose.foundation.gestures.animateScrollBy
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -19,17 +19,17 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.State
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.colorResource
-import androidx.compose.ui.unit.Constraints
+import androidx.navigation.NavController
+import androidx.navigation.NavHostController
 import com.example.quizashu.R
+import com.example.quizashu.presentation.Nav_Graph.Routes
 import com.example.quizashu.presentation.Quiz.component.QuizInterface
 import com.example.quizashu.presentation.Quiz.component.ShimmerEffectQuizInterface
 import com.example.quizashu.presentation.home.componentts.ButtonBox
@@ -38,7 +38,6 @@ import com.example.quizashu.presentation.util.Constants
 import com.example.quizashu.presentation.util.Dimens
 import com.example.quizashu.presentation.util.Dimens.MediumCornerRadius
 import kotlinx.coroutines.launch
-import kotlin.reflect.typeOf
 
 @Composable
 fun QuizScreen(
@@ -48,7 +47,13 @@ fun QuizScreen(
     quizType: String,
     event: (EventQuizScreen) -> Unit,
     state: StateQuizScreen,
+    navController: NavController,
 ) {
+    BackHandler {
+        navController.navigate(Routes.HomeScreen.route){
+            popUpTo(Routes.HomeScreen.route){inclusive = true}
+        }
+    }
     LaunchedEffect(key1 = Unit) {
         val difficulty = when (quizDifficulty) {
             "Medium" -> "medium"
@@ -75,7 +80,9 @@ fun QuizScreen(
     Column(modifier = Modifier.fillMaxSize()) {
 
         QuizAppBar(quizCategory = quizCategory) {
-
+            navController.navigate(Routes.HomeScreen.route){
+                popUpTo(Routes.HomeScreen.route){inclusive = true}
+            }
         }
 
 
@@ -211,49 +218,54 @@ fun QuizScreen(
                         textColor = colorResource(R.color.white),
 
                         ) {
-                        scope.launch {
+
+
                             if (pagerState.currentPage == state.quizState.size - 1) {
 
-
-                                for (i in state.quizState) {
-                                    Log.d("selected", i.selectedOptions.toString())
-                                }
+                                navController.navigate(
+                                    Routes.ScoreScreen.passNumOfQuestionAndCorrectAns(
+                                        state.quizState.size,
+                                        state.score
+                                    )
+                                )
 
 
                             } else {
-                                pagerState.animateScrollToPage(pagerState.currentPage + 1)
+                                scope.launch { pagerState.animateScrollToPage(pagerState.currentPage + 1) }
 
                             }
-                        }
+
+
                     }
                 }
+
             }
 
         }
 
-    }
-
-
-}
-
-
-@Composable
-fun quizFetched(state: StateQuizScreen): Boolean {
-    return when {
-        state.isLoading -> {
-            ShimmerEffectQuizInterface()
-            false
-        }
-
-        state.quizState?.isNotEmpty() == true -> {
-            true
-        }
-
-        else -> {
-            Text(text = state.error, color = colorResource(id = R.color.white))
-            false
-        }
 
     }
 }
+
+
+        @Composable
+        fun quizFetched(state: StateQuizScreen): Boolean {
+            return when {
+                state.isLoading -> {
+                    ShimmerEffectQuizInterface()
+                    false
+                }
+
+                state.quizState?.isNotEmpty() == true -> {
+                    true
+                }
+
+                else -> {
+                    Text(text = state.error, color = colorResource(id = R.color.white))
+                    false
+                }
+
+            }
+        }
+
 

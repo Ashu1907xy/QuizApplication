@@ -14,6 +14,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import javax.inject.Inject
+import kotlin.text.replace
 
 @HiltViewModel
 class QuizViewModel @Inject constructor(private val getQuizzesUseCases: GetQuizzesUseCases) :
@@ -51,6 +52,22 @@ class QuizViewModel @Inject constructor(private val getQuizzesUseCases: GetQuizz
             )
         }
         _quizList.value = quizList.value.copy(quizState = updateQuizStateList)
+        updateScore(_quizList.value.quizState[quizStateIndex])
+    }
+
+    private fun updateScore(quizState: QuizState) {
+        if (quizState.selectedOptions != -1) {
+            val correctAnswer = quizState.quiz?.correct_answer
+            val selectedAnswer = quizState.selectedOptions?.let {
+                quizState.shuffledOptions[it].replace("&quot;", "\"").replace("&#039;", "\"")
+            }
+            Log.d("check", "$correctAnswer -> $selectedAnswer")
+
+            if (correctAnswer == selectedAnswer) {
+                val previousScore = _quizList.value.score
+                _quizList.value = quizList.value.copy(score = previousScore + 1)
+            }
+        }
     }
 
     private fun getQuizzes(amount: Int, category: Int, difficulty: String, type: String) {

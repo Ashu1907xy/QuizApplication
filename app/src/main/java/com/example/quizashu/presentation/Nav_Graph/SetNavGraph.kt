@@ -11,6 +11,7 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.example.quizashu.presentation.Quiz.QuizScreen
 import com.example.quizashu.presentation.Quiz.QuizViewModel
+import com.example.quizashu.presentation.Score.ScoreScreen
 import com.example.quizashu.presentation.home.HomeScreen
 import com.example.quizashu.presentation.home.componentts.ViewModel.HomeViewModel
 
@@ -36,7 +37,7 @@ fun SetNavGraph() {
                 navArgument(ARG_KEY_QUIZ_NUMBER) { type = NavType.IntType },
                 navArgument(ARG_KEY_QUIZ_CATEGORY) { type = NavType.StringType },
                 navArgument(ARG_KEY_QUIZ_DIFFICULTY) { type = NavType.StringType },
-                navArgument(ARG_KEY_QUIZ_TYPE){type = NavType.StringType}
+                navArgument(ARG_KEY_QUIZ_TYPE) { type = NavType.StringType }
             )
         ) {
             val numberOfQuizzes = it.arguments?.getInt(ARG_KEY_QUIZ_NUMBER)
@@ -44,7 +45,7 @@ fun SetNavGraph() {
             val difficulty = it.arguments?.getString(ARG_KEY_QUIZ_DIFFICULTY)
             val type = it.arguments?.getString(ARG_KEY_QUIZ_TYPE)
 
-            val quizViewModel : QuizViewModel = hiltViewModel()
+            val quizViewModel: QuizViewModel = hiltViewModel()
             val state = quizViewModel.quizList.collectAsState()
 
             QuizScreen(
@@ -52,10 +53,31 @@ fun SetNavGraph() {
                 quizCategory = category!!,
                 quizDifficulty = difficulty!!,
                 quizType = type!!,
-                event =quizViewModel::onEvent,
-               state = state.value
+                event = quizViewModel::onEvent,
+                state = state.value,
+                navController = navController
 
             )
+        }
+
+        composable(
+            route = Routes.ScoreScreen.route,
+            arguments = listOf(
+                navArgument(NOQ_KEY) { type = NavType.IntType },
+                navArgument(CORRECT_ANS_KEY) { type = NavType.IntType }
+            )
+        ) {
+            val numOfQuestions = it.arguments?.getInt(NOQ_KEY)
+            val numOfCorrectAns = it.arguments?.getInt(CORRECT_ANS_KEY)
+
+            ScoreScreen(
+                numOfQuestions = numOfQuestions!!,
+                numOfCorrectAns = numOfCorrectAns!!,
+                navController = navController
+
+            )
+
+
         }
 
 
